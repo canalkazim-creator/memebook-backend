@@ -20,17 +20,17 @@ app.use(express.json());
 
 // 4. Android'in istek atacağı kapıyı (Endpoint) oluşturuyoruz 
 app.post('/send-notification', async (req, res) => { 
-    // DİKKAT: Artık Android'den "userId" bilgisini de alıyoruz!
-    const { userId, title, body } = req.body; 
+    // DİKKAT: Artık Android'den "authorId" bilgisini alıyoruz!
+    const { authorId, title, body } = req.body; 
 
     // Eksik veri gelirse uyar 
-    if (!userId || !title || !body) { 
-        return res.status(400).json({ error: 'Eksik bilgi gönderdiniz! (userId, title veya body eksik)' }); 
+    if (!authorId || !title || !body) { 
+        return res.status(400).json({ error: 'Eksik bilgi gönderdiniz! (authorId, title veya body eksik)' }); 
     } 
 
     try { 
-        // 5. Firestore'dan SADECE hedef kullanıcıyı çekiyoruz
-        const userDoc = await getFirestore().collection('users').doc(userId).get();
+        // 5. Firestore'dan SADECE hedef kullanıcıyı çekiyoruz (authorId ile)
+        const userDoc = await getFirestore().collection('users').doc(authorId).get();
         
         // Kullanıcı veritabanında yoksa işlemi durdur
         if (!userDoc.exists) {
@@ -51,7 +51,7 @@ app.post('/send-notification', async (req, res) => {
                 title: title, 
                 body: body 
             }, 
-            token: fcmToken // Sadece onaylanan kişinin token'ını veriyoruz
+            token: fcmToken // Sadece memenin sahibinin (authorId) token'ını veriyoruz
         }; 
 
         // 7. Bildirimi TEKİL olarak Firebase'e yolluyoruz 
